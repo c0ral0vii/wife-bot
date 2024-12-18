@@ -1,8 +1,8 @@
-"""fix
+"""change fk
 
-Revision ID: 64ff86cec16b
-Revises: f8059f19fd02
-Create Date: 2024-12-15 11:22:55.293627
+Revision ID: 245c350b73d3
+Revises: 498966d854d3
+Create Date: 2024-12-18 03:09:24.732096
 
 """
 from typing import Sequence, Union
@@ -12,8 +12,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '64ff86cec16b'
-down_revision: Union[str, None] = 'f8059f19fd02'
+revision: str = '245c350b73d3'
+down_revision: Union[str, None] = '498966d854d3'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

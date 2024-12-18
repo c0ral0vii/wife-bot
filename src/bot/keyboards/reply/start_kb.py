@@ -9,6 +9,7 @@ async def start_kb():
     shop = KeyboardButton(text="Рынок")
     trade = KeyboardButton(text="Обмен")
     find_wife = KeyboardButton(text="Поиск персонажа")
+    spin = KeyboardButton(text="Крутить персонажа")
     vip = KeyboardButton(text="Купить VIP")
 
     kb = ReplyKeyboardMarkup(
@@ -16,7 +17,8 @@ async def start_kb():
             [profile, top_users],
             [bonus, games],
             [shop, trade],
-            [find_wife, vip],
+            [find_wife, spin],
+            [vip]
         ],
         resize_keyboard=True
     )

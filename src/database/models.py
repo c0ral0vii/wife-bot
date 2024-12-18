@@ -12,9 +12,12 @@ from sqlalchemy import (
 
     Table,
     Column,
+    Date,
+    select
     )
 from decimal import Decimal
 from sqlalchemy.orm import Mapped, mapped_column, DeclarativeBase, relationship
+from sqlalchemy.ext.asyncio import AsyncSession
 from enum import Enum
 
 
@@ -68,7 +71,7 @@ class User(Base):
     username: Mapped[str] = mapped_column(String, default="Не задано")
     status: Mapped[UserStatus] = mapped_column(SQLEnum(UserStatus, name="user_status"),
                                                 default=UserStatus.NOT_VIP)
-
+    vip_to: Mapped[Date] = mapped_column(Date, nullable=True) 
     balance: Mapped[Decimal] = mapped_column(Numeric(precision=25, scale=2), default=Decimal('0.00'))
     profile_imgs: Mapped[str] = mapped_column(String, nullable=False)
 
@@ -140,7 +143,7 @@ class Slot(Base):
 
     wife_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("wifes.id"), nullable=False)
     shop_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("shop.id"), nullable=False)
-    seller_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"), nullable=False)
+    seller_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.user_id"), nullable=False)
 
     seller: Mapped["User"] = relationship("User", back_populates="slots_for_sale")
     wife: Mapped["Wife"] = relationship("Wife", back_populates="slot")
@@ -156,7 +159,7 @@ class Trade(Base):
     to_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"), nullable=False)
 
     change_from_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("wifes.id"), nullable=False)
-    change_to_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("wifes.id"), nullable=False)
+    change_to_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("wifes.id"), nullable=True)
 
     from_: Mapped["User"] = relationship("User", foreign_keys=[from_id], back_populates="sent_trades")
     to_: Mapped["User"] = relationship("User", foreign_keys=[to_id], back_populates="received_trades")

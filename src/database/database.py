@@ -2,7 +2,7 @@ from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, Asyn
 from src.config.config import settings
 
 
-_DATABASE_URL = "postgresql+asyncpg://root:root@0.0.0.0:5432/wife_db"
+_DATABASE_URL = settings.database_link
 
 print(_DATABASE_URL)
 engine = create_async_engine(

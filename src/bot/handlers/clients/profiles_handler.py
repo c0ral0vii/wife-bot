@@ -14,9 +14,16 @@ logger = setup_logger(__name__)
 
 @router.message(F.text.lower() == "!профиль")
 @router.message(F.text == "Профиль")
-@router.message(Command("/profile", "!profile"))
+@router.message(Command("profile"))
 async def get_profile(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
+    
+    text = message.text.split(" ")
+    dont_change = False
+    if len(text) >= 2:
+        dont_change = True
+        user_id = int(text[-1])
+
     user_data = await get_user(user_id=user_id)
 
     # username_query = message.get_args()  # Получаем аргументы после команды
@@ -39,11 +46,12 @@ async def get_profile(message: types.Message, state: FSMContext):
     else:
         photo = types.FSInputFile(path=default_photo_path)
     
-    if not message.chat.type == "private":
+    if not message.chat.type == "private" or dont_change:
         # В боте
-        await message.answer_photo(photo=photo, caption=f"Ваше имя - {user_data.username}\n\nВаш статус - {user_data.status.value}\n\nБаланс - {user_data.balance}\nКоличество персонажей - {count.get("total_wifes", 0)}")
+        await message.answer_photo(photo=photo, caption=f"Ваше имя - {user_data.username}\nЮзер айди(используется для обмена или просмотра профиля) - {user_data.user_id}\n\nВаш статус - {user_data.status.value}\n\nБаланс - {user_data.balance}\nКоличество персонажей - {count.get("total_wifes", 0)}")
+    
     else:
-        await message.answer_photo(photo=photo, caption=f"Ваше имя - {user_data.username}\n\nВаш статус - {user_data.status.value}\n\nБаланс - {user_data.balance}\nКоличество персонажей - {count.get("total_wifes", 0)}", 
+        await message.answer_photo(photo=photo, caption=f"Ваше имя - {user_data.username}\nЮзер айди(используется для обмена или просмотра профиля) - {user_data.user_id}\n\nВаш статус - {user_data.status.value}\n\nБаланс - {user_data.balance}\nКоличество персонажей - {count.get("total_wifes", 0)}", 
                                    reply_markup=InlineKeyboardMarkup(
                                        inline_keyboard=[
                                            [InlineKeyboardButton(text="Изменить фотографию", callback_data="change_image")],
