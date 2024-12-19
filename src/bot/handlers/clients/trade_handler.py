@@ -34,7 +34,7 @@ async def trade(message: types.Message, bot: Bot, state: FSMContext):
     user_id = message.from_user.id
     characters = await get_wifes_for_user(user_id=user_id)
     chunks = list(chunked(characters, 5))
-    await state.update_data(page=1, max_pages=len(chunks), pages=chunks, use_user_id=user_id, to_=text[-1])
+    await state.update_data(page=1, max_pages=len(chunks), pages=chunks, use_user_id=user_id, to_=text[-1].strip())
 
     await state.set_state(TradeState.use_user_id)
 

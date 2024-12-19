@@ -42,6 +42,9 @@ async def find(message: types.Message, state: FSMContext):
         else:
             photo = types.FSInputFile(path=default_photo_path)
 
-        await message.answer_photo(photo=photo, caption=f"Найден персонаж: {result.name} ({result.rare.value})")
+        await message.answer_photo(photo=photo, caption=f"Подробная информация о персонаже: 🆔{result.id} \
+                                   \n👤Полное имя: {result.name} \
+                                   \n🌸 Тайтл: {result.from_} \
+                                   \n💎Редкость: {result.rare.value}")
         await state.clear()
 

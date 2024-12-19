@@ -14,6 +14,7 @@ async def find_characters(text: str):
         stmt = select(Wife).where(or_(
             Wife.from_.ilike(search_pattern),
             Wife.name.ilike(search_pattern),
+            Wife.id.ilike(search_pattern),
         ))
         
         result = await session.execute(stmt)

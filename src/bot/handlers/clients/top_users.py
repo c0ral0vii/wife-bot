@@ -16,18 +16,18 @@ async def top_users(message: types.Message):
     top_users = await get_top_users_by_characters(limit=10)
     
     top_kb = [
-        [InlineKeyboardButton(text='Топ по легендаркам', callback_data='top_legendary')],
+        [InlineKeyboardButton(text='😎Топ по легендаркам', callback_data='top_legendary')],
     ]
     top = 1
     for user in top_users:
-        top_kb.append([InlineKeyboardButton(text=f"{top}. {user.username}-{user.characters_count}", callback_data=f"detail")])
+        top_kb.append([InlineKeyboardButton(text=f"{top}. 😎{user.username}-🏰{user.characters_count}", callback_data=f"detail")])
         top += 1
 
     kb = InlineKeyboardMarkup(
             inline_keyboard=top_kb
         )
     
-    await message.answer(text=f"Топ пользователей по персонажам:", reply_markup=kb)
+    await message.answer(text=f"😎Топ пользователей по персонажам:", reply_markup=kb)
 
 
 @router.callback_query(F.data == "top_legendary")
@@ -38,11 +38,11 @@ async def top_legendary(callback: types.CallbackQuery):
     ]
     top = 1
     for user in top_users:
-        top_kb.append([InlineKeyboardButton(text=f"{top}. {user.username}", callback_data=f"detail")])
+        top_kb.append([InlineKeyboardButton(text=f"{top}. 😎{user.username}-🟠{user.legendary_count}", callback_data=f"detail")])
         top += 1
 
     kb = InlineKeyboardMarkup(
             inline_keyboard=top_kb
         )
     
-    await callback.message.answer(text=f"Топ пользователей по легендаркам:", reply_markup=kb)
+    await callback.message.answer(text=f"😎Топ пользователей по легендаркам:", reply_markup=kb)

@@ -26,16 +26,8 @@ async def get_profile(message: types.Message, state: FSMContext):
 
     user_data = await get_user(user_id=user_id)
 
-    # username_query = message.get_args()  # Получаем аргументы после команды
-    # if username_query:
-    #     # Если есть username, ищем его профиль
-    # else:
-    #     # Иначе ищем профиль текущего пользователя
-    #     user_data = await get_user(user_id=user_id)
-
-
     if not user_data:
-        await message.answer("У вас нет профиль, перейдите в бота и создайте его")
+        await message.answer("У вас нет профиля, перейдите в бота и создайте его")
         
     count = await get_count_wifes(user=user_data)
     user_photo_path = f"./media/profiles/{user_id}/profile.png"
@@ -48,10 +40,19 @@ async def get_profile(message: types.Message, state: FSMContext):
     
     if not message.chat.type == "private" or dont_change:
         # В боте
-        await message.answer_photo(photo=photo, caption=f"Ваше имя - {user_data.username}\nЮзер айди(используется для обмена или просмотра профиля) - {user_data.user_id}\n\nВаш статус - {user_data.status.value}\n\nБаланс - {user_data.balance}\nКоличество персонажей - {count.get("total_wifes", 0)}")
-    
+        await message.answer_photo(photo=photo, caption=f"""Ваше имя - {user_data.username}\nЮзер айди(используется для обмена или просмотра профиля) - {user_data.user_id}\n\nВаш статус - {user_data.status.value}\n\n🏰 Гарем: {count.get("my_total", 0)}/{count.get("total_counts", 0)} \n\
+                                   \n⚪️ {count.get("my_simple", 0)}/{count.get("total_simple", 0)} \
+                                    \n🟢 {count.get("my_rare", 0)}/{count.get("total_rare", 0)} \
+                                    \n🟣 {count.get("my_epic", 0)}/{count.get("total_epic", 0)}  \
+                                    \n🟠 {count.get("my_legendary", 0)}/{count.get("total_legendary", 0)} 
+                                   """)
     else:
-        await message.answer_photo(photo=photo, caption=f"Ваше имя - {user_data.username}\nЮзер айди(используется для обмена или просмотра профиля) - {user_data.user_id}\n\nВаш статус - {user_data.status.value}\n\nБаланс - {user_data.balance}\nКоличество персонажей - {count.get("total_wifes", 0)}", 
+        await message.answer_photo(photo=photo, caption=f"""Ваше имя - {user_data.username}\nЮзер айди(используется для обмена или просмотра профиля) - {user_data.user_id}\n\nВаш статус - {user_data.status.value}\n\n🏰 Гарем: {count.get("my_total", 0)}/{count.get("total_counts", 0)} \n\
+                                   \n⚪️ {count.get("my_simple", 0)}/{count.get("total_simple", 0)} \
+                                    \n🟢 {count.get("my_rare", 0)}/{count.get("total_rare", 0)} \
+                                    \n🟣 {count.get("my_epic", 0)}/{count.get("total_epic", 0)}  \
+                                    \n🟠 {count.get("my_legendary", 0)}/{count.get("total_legendary", 0)} 
+                                   """, 
                                    reply_markup=InlineKeyboardMarkup(
                                        inline_keyboard=[
                                            [InlineKeyboardButton(text="Изменить фотографию", callback_data="change_image")],

@@ -41,13 +41,6 @@ class UserStatus(str, Enum):
     NOT_VIP = "Обычный пользователь"
 
 
-class Sex(str, Enum):
-    MALE = "Мужчина"
-    WOMEN = "Женщина"
-
-    NOT_SETUP = "Не указан"
-
-
 class Base(DeclarativeBase):
     created: Mapped[DateTime] = mapped_column(DateTime, default=func.now())
     updated: Mapped[DateTime] = mapped_column(DateTime, default=func.now(), onupdate=func.now())
@@ -97,7 +90,6 @@ class Wife(Base):
 
     wife_imgs: Mapped[str] = mapped_column(String, nullable=False)
     from_: Mapped[str] = mapped_column(String, nullable=False)
-    sex: Mapped[Sex] = mapped_column(SQLEnum(Sex, name="sex"), default=Sex.NOT_SETUP)
     users: Mapped[list["User"]] = relationship(
         "User",
         secondary=user_wife_association,

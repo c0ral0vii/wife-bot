@@ -10,7 +10,7 @@ async def pagination_kb(list_requests: List[Wife] = None, list_slots: List[Slot]
 
     if not list_requests is None:
         for wife in list_requests:
-            wifes.append([InlineKeyboardButton(text=f"Имя:{wife.name}-Пол:{wife.sex.value}-Аниме:{wife.from_}-Редкость:{wife.rare.value}", callback_data=f"select_{user_id}_{wife.id}")])
+            wifes.append([InlineKeyboardButton(text=f"Имя:{wife.name}-Аниме:{wife.from_}-Редкость:{wife.rare.value}", callback_data=f"select_{user_id}_{wife.id}")])
         refresh = InlineKeyboardButton(text='⏳Перезагрузить', callback_data=f'refresh_{user_id}')
         left_button = InlineKeyboardButton(text='<', callback_data=f'left_pagination_{user_id}')
         page_button = InlineKeyboardButton(text=f'{page}/{max_page}', callback_data='page_pagination')
@@ -20,9 +20,9 @@ async def pagination_kb(list_requests: List[Wife] = None, list_slots: List[Slot]
         for slot in list_slots:
             if not slot.closed and not slot.selled:
                 if not my_slots:
-                    wifes.append([InlineKeyboardButton(text=f"ID:{slot.id}, {slot.wife.name}({slot.wife.rare.value}), Пол: {slot.wife.sex.value}->{slot.price}", callback_data=f"trade_{user_id}_{slot.id}")])
+                    wifes.append([InlineKeyboardButton(text=f"ID:{slot.id}, {slot.wife.name}({slot.wife.rare.value})->{slot.price}", callback_data=f"trade_{user_id}_{slot.id}")])
                 else:
-                    wifes.append([InlineKeyboardButton(text=f"ID:{slot.id}, {slot.wife.name}({slot.wife.rare.value}), Пол: {slot.wife.sex.value}->{slot.price}", callback_data=f"trade_{user_id}_{slot.id}")])
+                    wifes.append([InlineKeyboardButton(text=f"ID:{slot.id}, {slot.wife.name}({slot.wife.rare.value})->{slot.price}", callback_data=f"trade_{user_id}_{slot.id}")])
 
         refresh = InlineKeyboardButton(text='⏳Перезагрузить', callback_data=f'trade_refresh_{user_id}')
         left_button = InlineKeyboardButton(text='<', callback_data=f'trade_left_pagination_{user_id}')
@@ -33,9 +33,9 @@ async def pagination_kb(list_requests: List[Wife] = None, list_slots: List[Slot]
         for slot in list_slots:
             if not slot.closed and not slot.selled:
                 if not my_slots:
-                    wifes.append([InlineKeyboardButton(text=f"ID:{slot.id}, {slot.wife.name}({slot.wife.rare.value}), Пол: {slot.wife.sex.value}->{slot.price}", callback_data=f"buy_{user_id}_{slot.id}")])
+                    wifes.append([InlineKeyboardButton(text=f"ID:{slot.id}, {slot.wife.name}({slot.wife.rare.value})->{slot.price}", callback_data=f"buy_{user_id}_{slot.id}")])
                 else:
-                    wifes.append([InlineKeyboardButton(text=f"ID:{slot.id}, {slot.wife.name}({slot.wife.rare.value}), Пол: {slot.wife.sex.value}->{slot.price}", callback_data=f"stop_select_{user_id}_{slot.id}")])
+                    wifes.append([InlineKeyboardButton(text=f"ID:{slot.id}, {slot.wife.name}({slot.wife.rare.value})->{slot.price}", callback_data=f"stop_select_{user_id}_{slot.id}")])
 
         refresh = InlineKeyboardButton(text='⏳Перезагрузить', callback_data=f'shop_refresh_{user_id}')
         left_button = InlineKeyboardButton(text='<', callback_data=f'shop_left_pagination_{user_id}')

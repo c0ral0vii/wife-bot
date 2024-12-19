@@ -1,4 +1,4 @@
-from typing import Dict, Any, NoReturn
+from typing import Dict, Any, NoReturn, Union
 from sqlalchemy import select, func
 from sqlalchemy.orm import aliased, joinedload
 from decimal import Decimal
@@ -92,23 +92,89 @@ async def get_user(user_id: int = None, username: str = None) -> User | NoReturn
 
 
 
-async def get_count_wifes(user: User) -> Dict[str, int]:
+
+async def get_count_wifes(user: User) -> Dict[str, Union[int, Dict[str, int]]]:
+    expected_rarities = [AllRares.SIMPLE, AllRares.RARE, AllRares.EPIC, AllRares.LEGENDARY]
+    user_counts = {
+        "my_simple": 0,
+        "my_rare": 0,
+        "my_epic": 0,
+        "my_legendary": 0
+    }
+    total_counts = {
+        "total_simple": 0,
+        "total_rare": 0,
+        "total_epic": 0,
+        "total_legendary": 0
+    }
+    
     async with async_session() as session:
-        user_wife_alias = aliased(user_wife_association)
-
-        # Explicitly specify select_from and the ON condition for the join
-        query = await session.execute(
+        # Query for user's counts per rarity
+        user_character_alias = aliased(user_wife_association)
+        character_alias = aliased(Wife)
+        
+        query_user_rarities = await session.execute(
             select(
-                func.count(user_wife_alias.c.wife_id).label("total_wifes")
+                character_alias.rare,
+                func.count(func.distinct(character_alias.id)).label("count")
             )
-            .select_from(user_wife_alias)  # Set the left side explicitly
-            .join(User, User.id == user_wife_alias.c.user_id)  # Define the ON clause
-            .where(User.id == user.id)
+            .select_from(user_character_alias)
+            .join(character_alias, user_character_alias.c.wife_id == character_alias.id)
+            .where(user_character_alias.c.user_id == user.id)
+            .group_by(character_alias.rare)
         )
-
-        # Extract the result
-        total_wifes = query.scalar_one_or_none()  # Use scalar_one_or_none for better safety
-        return {"total_wifes": total_wifes or 0}  # Handle None case
+        total_count = 0
+        # Update user_counts based on query results
+        for rarity, count in query_user_rarities.fetchall():
+            total_count += count
+            if rarity == AllRares.SIMPLE:
+                user_counts["my_simple"] = count
+            elif rarity == AllRares.RARE:
+                user_counts["my_rare"] = count
+            elif rarity == AllRares.EPIC:
+                user_counts["my_epic"] = count
+            elif rarity == AllRares.LEGENDARY:
+                user_counts["my_legendary"] = count
+        
+        # Query for total counts per rarity across all users
+        query_total_rarities = await session.execute(
+            select(
+                character_alias.rare,
+                func.count(func.distinct(character_alias.id)).label("count")
+            )
+            .select_from(character_alias)
+            .group_by(character_alias.rare)
+        )
+        
+        # Update total_counts based on query results
+        for rarity, count in query_total_rarities.fetchall():
+            if rarity == AllRares.SIMPLE:
+                total_counts["total_simple"] = count
+            elif rarity == AllRares.RARE:
+                total_counts["total_rare"] = count
+            elif rarity == AllRares.EPIC:
+                total_counts["total_epic"] = count
+            elif rarity == AllRares.LEGENDARY:
+                total_counts["total_legendary"] = count
+        
+        # Query for total number of unique characters across all users
+        query_total_characters = await session.execute(
+            select(func.count(func.distinct(character_alias.id)))
+            .select_from(character_alias)
+        )
+        
+        # Get the total count
+        total_characters = query_total_characters.scalar_one_or_none() or 0
+        
+        # Prepare the result dictionary
+        result = {
+            "my_total": total_count,
+            "total_counts": total_characters,
+            **total_counts,
+            **user_counts
+        }
+        
+        return result
 
 
 async def change_nickname(user_id: int, new_username: str) -> bool:
@@ -147,7 +213,8 @@ async def add_balance(user_id: int, add_to: Decimal | int | float):
         await session.commit()
 
         return {
-            "value": add_to
+            "value": add_to,
+            "balance": user.balance
         }
 
 async def remove_balance(user_id: int, amount_to_remove: int | float | Decimal):

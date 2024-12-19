@@ -1,11 +1,11 @@
 import random
 from sqlalchemy import select, and_
 from sqlalchemy.orm import selectinload
-from src.database.models import User, Wife, AllRares, Sex, UserStatus
+from src.database.models import User, Wife, AllRares, UserStatus
 from src.database.database import async_session  # Предполагается, что у вас есть фабрика сессий
 
 
-async def spin_character(user_id: int, rarity: AllRares = None, sex: Sex = None) -> Wife:
+async def spin_character(user_id: int, rarity: AllRares = None) -> Wife:
     """
     Прокрутка персонажа с учетом редкости.
     Если редкость не указана, то выбирается случайная редкость с учетом процентов.
@@ -62,19 +62,10 @@ async def spin_character(user_id: int, rarity: AllRares = None, sex: Sex = None)
             )[0]
 
         # Получаем всех персонажей с выбранной редкостью, которых нет у пользователя
-        if sex is None:
-            query = select(Wife).where(
-                Wife.rare == rarity,
-                Wife.id.notin_(user_wife_ids)  # Исключаем вайфы, которые уже есть у пользователя
-            )
-        else:
-            query = select(Wife).where(
-                and_(
-                    Wife.rare == rarity,
-                    Wife.sex == sex,
-                ),
-                Wife.id.notin_(user_wife_ids)  # Исключаем вайфы, которые уже есть у пользователя
-            )
+        query = select(Wife).where(
+            Wife.rare == rarity,
+            Wife.id.notin_(user_wife_ids)  # Исключаем вайфы, которые уже есть у пользователя
+        )
 
         result = await session.execute(query)
         characters = result.scalars().all()

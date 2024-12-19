@@ -18,16 +18,17 @@ async def get_bonus(message: types.Message):
     status = await redis_manager.get(f"user:{user_id}:bonus")
 
     if status == "Не прошло 2 часа":
-        await message.answer(text="Вы еще не можете получить бонус\nБонус получается каждый час")
+        await message.answer(text="⌛️ Бонус активен каждые: 2 часа")
     else:
         try:
             await redis_manager.set_with_ttl(key=f"user:{user_id}:bonus", value="Не прошло 2 часа", ttl=7200)
             value = 1000
             added = await add_balance(
                 user_id=user_id,
-                add_to=Decimal(value)
+                add_to=Decimal(value),
             )
-            await message.answer(f"Вам начислено {added["value"]} бонусов\nСледующий бонус можно получить через два часа!")
+            await message.answer(f"🎁 Елизабет, Вы получили 💠{added['value']}, теперь у вас 💠{added['balance']} \
+\n⌛️ Можно забрать снова через: 2 часа")
         except Exception as e:
             logger.error(e)
             await message.answer("Попробуйте еще раз")

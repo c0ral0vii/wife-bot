@@ -98,7 +98,7 @@ async def my_lot_select(callback: types.CallbackQuery, state: FSMContext):
     if character:
         await state.update_data(selecting_wife=character.id)
 
-        await callback.message.answer_photo(photo=photo, caption=f"👨Ваш лот: \nИмя: {character.name} ({character.rare.value})\nПол: {character.sex.value}\nИз аниме - {character.from_}\n\nЦена-{slot.price}",
+        await callback.message.answer_photo(photo=photo, caption=f"👨Ваш лот: \nИмя: {character.name} ({character.rare.value})\nИз аниме - {character.from_}\n\nЦена-{slot.price}",
                                         reply_markup=InlineKeyboardMarkup(inline_keyboard=[
                                             [InlineKeyboardButton(text="Снять с продажи", callback_data=f"stop_selling_{data["use_user_id"]}_{callback_data}")]
                                         ]))
@@ -252,7 +252,7 @@ async def buy_character(callback: types.CallbackQuery, state: FSMContext):
     if character:
         await state.update_data(selecting_wife=character.id)
 
-        await callback.message.answer_photo(photo=photo, caption=f"👨Вы выбрали персонажа для покупки: \n Имя: {character.name} ({character.rare.value})\nПол: {character.sex.value}\nИз аниме - {character.from_}\n\nЦена-{slot.price}",
+        await callback.message.answer_photo(photo=photo, caption=f"👨Вы выбрали персонажа для покупки: \n Имя: {character.name} ({character.rare.value})\nИз аниме - {character.from_}\n\nЦена-{slot.price}",
                                         reply_markup=InlineKeyboardMarkup(inline_keyboard=[
                                             [InlineKeyboardButton(text="Купить", callback_data=f"this_buy_{character.id}_{callback_data}")]
                                         ]))
@@ -395,7 +395,7 @@ async def select(callback: types.CallbackQuery, bot: Bot, state: FSMContext):
     if character:
         await state.update_data(selecting_wife=character.id)
 
-        await callback.message.answer_photo(photo=photo, caption=f"👨Вы выбрали персонажа для продажи: {character.name} ({character.rare.value})\nПол: {character.sex.value}\nИз {character.from_}",
+        await callback.message.answer_photo(photo=photo, caption=f"👨Вы выбрали персонажа для продажи: {character.name} ({character.rare.value})\nИз {character.from_}",
                                         reply_markup=InlineKeyboardMarkup(inline_keyboard=[
                                             [InlineKeyboardButton(text="Выставить на продажу", callback_data=f"on_slot_{character.id}")]
                                         ]))
@@ -454,7 +454,7 @@ async def finish_slot(callback: types.CallbackQuery, state: FSMContext):
             price=price,
         )
 
-        await callback.message.answer(f"@{callback.from_user.username} ваш лот под id - {slot.id} выставлен на продажу")
+        await callback.message.answer(f"✅@{callback.from_user.username} ваш лот под id - {slot.id} выставлен на продажу")
 
     if callback_data == "global":
         await create_slot(
@@ -463,5 +463,5 @@ async def finish_slot(callback: types.CallbackQuery, state: FSMContext):
             shop_id=2,
             price=price,
         )
-        await callback.message.answer(f"@{callback.from_user.username} ваш лот под id - {slot.id} выставлен на продажу")
+        await callback.message.answer(f"✅@{callback.from_user.username} ваш лот под id - {slot.id} выставлен на продажу")
     await state.clear()
