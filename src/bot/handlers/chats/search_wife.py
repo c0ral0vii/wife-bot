@@ -13,7 +13,7 @@ logger = setup_logger(__name__)
 class FindState(StatesGroup):
     find = State()
 
-
+@router.message(F.text.startswith("Поиск персонажа"))
 @router.message(Command("find"))
 async def find_character(message: types.Message, state: FSMContext):
     await state.set_state(FindState.find)

@@ -5,7 +5,7 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from src.database.models import Wife, Slot
 
 
-async def pagination_kb(list_requests: List[Wife] = None, list_slots: List[Slot] = None, page: int = 1, max_page = "..", user_id: int = None, my_slots=False):
+async def pagination_kb(list_requests: List[Wife] = None, list_slots: List[Slot] = None, trade: bool = False, page: int = 1, max_page = "..", user_id: int = None, my_slots=False):
     wifes = []
 
     if not list_requests is None:
@@ -15,6 +15,20 @@ async def pagination_kb(list_requests: List[Wife] = None, list_slots: List[Slot]
         left_button = InlineKeyboardButton(text='<', callback_data=f'left_pagination_{user_id}')
         page_button = InlineKeyboardButton(text=f'{page}/{max_page}', callback_data='page_pagination')
         right_button = InlineKeyboardButton(text='>', callback_data=f'right_pagination_{user_id}')
+        
+    elif trade:
+        for slot in list_slots:
+            if not slot.closed and not slot.selled:
+                if not my_slots:
+                    wifes.append([InlineKeyboardButton(text=f"ID:{slot.id}, {slot.wife.name}({slot.wife.rare.value}), Пол: {slot.wife.sex.value}->{slot.price}", callback_data=f"trade_{user_id}_{slot.id}")])
+                else:
+                    wifes.append([InlineKeyboardButton(text=f"ID:{slot.id}, {slot.wife.name}({slot.wife.rare.value}), Пол: {slot.wife.sex.value}->{slot.price}", callback_data=f"trade_{user_id}_{slot.id}")])
+
+        refresh = InlineKeyboardButton(text='⏳Перезагрузить', callback_data=f'trade_refresh_{user_id}')
+        left_button = InlineKeyboardButton(text='<', callback_data=f'trade_left_pagination_{user_id}')
+        page_button = InlineKeyboardButton(text=f'{page}/{max_page}', callback_data='page_pagination')
+        right_button = InlineKeyboardButton(text='>', callback_data=f'trade_right_pagination_{user_id}')
+
     else:
         for slot in list_slots:
             if not slot.closed and not slot.selled:

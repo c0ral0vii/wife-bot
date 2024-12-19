@@ -39,7 +39,7 @@ async def help_command(message: types.Message):
     await message.answer(
         text="""<b>Список команд:</b>
                     
-            <b>Main Commands:</b>
+            <b>Главные команды:</b>
             /start - Начать работу с ботом
             /help - Показать список команд
             /promo - Ввести промокод
@@ -49,10 +49,10 @@ async def help_command(message: types.Message):
             /shop - Открыть рынок
             /bonus - Получить ежечасный бонус
 
-            <b>Profile Management:</b>
+            <b>Профиль:</b>
             /profile - Просмотр своего профиля
 
-            <b>Marketplace:</b>
+            <b>Магазин:</b>
             /shop - Глобальный и локальный рынки
 
             <b>Игры:</b>

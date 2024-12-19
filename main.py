@@ -16,6 +16,7 @@ from src.bot.handlers.clients import (
     get_bonus_handler,
     top_users,
     roulete_handler,
+    trade_handler,
 )
 from src.bot.handlers.commands import (
     start_handler,
@@ -42,6 +43,7 @@ dp.include_routers(
     roulete_handler.router,
     games_command.router,
     search_wife.router,
+    trade_handler.router,
 )
 
 
