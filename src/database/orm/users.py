@@ -6,7 +6,6 @@ from decimal import Decimal
 from src.database.database import async_session
 from src.database.models import User, UserStatus, Wife, user_wife_association, AllRares
 
-
 async def create_user(data: Dict[str, Any]) -> Dict:
     try:
         async with async_session() as session:
@@ -94,7 +93,6 @@ async def get_user(user_id: int = None, username: str = None) -> User | NoReturn
 
 
 async def get_count_wifes(user: User) -> Dict[str, Union[int, Dict[str, int]]]:
-    expected_rarities = [AllRares.SIMPLE, AllRares.RARE, AllRares.EPIC, AllRares.LEGENDARY]
     user_counts = {
         "my_simple": 0,
         "my_rare": 0,
@@ -107,7 +105,13 @@ async def get_count_wifes(user: User) -> Dict[str, Union[int, Dict[str, int]]]:
         "total_epic": 0,
         "total_legendary": 0
     }
-    
+    percentages = {
+        "my_total_percent": 0,
+        "my_simple_percent": 0,
+        "my_rare_percent": 0,
+        "my_epic_percent": 0,
+        "my_legendary_percent": 0
+    }
     async with async_session() as session:
         # Query for user's counts per rarity
         user_character_alias = aliased(user_wife_association)
@@ -165,13 +169,20 @@ async def get_count_wifes(user: User) -> Dict[str, Union[int, Dict[str, int]]]:
         
         # Get the total count
         total_characters = query_total_characters.scalar_one_or_none() or 0
-        
+        if total_characters > 0:
+            percentages["my_total_percent"] = (total_count / total_characters) * 100
+            percentages["my_simple_percent"] = (user_counts["my_simple"] / total_counts["total_simple"]) * 100
+            percentages["my_rare_percent"] = (user_counts["my_rare"] / total_counts["total_rare"]) * 100
+            percentages["my_epic_percent"] = (user_counts["my_epic"] / total_counts["total_epic"]) * 100
+            percentages["my_legendary_percent"] = (user_counts["my_legendary"] / total_counts["total_legendary"]) * 100
+
         # Prepare the result dictionary
         result = {
             "my_total": total_count,
             "total_counts": total_characters,
             **total_counts,
-            **user_counts
+            **user_counts,
+            **percentages,
         }
         
         return result
@@ -216,6 +227,34 @@ async def add_balance(user_id: int, add_to: Decimal | int | float):
             "value": add_to,
             "balance": user.balance
         }
+    
+
+async def add_alter_balance(user_id: int, add_to: Decimal | int | float):
+    async with async_session() as session:
+        stmt = select(User).where(User.user_id == user_id)
+        result = await session.execute(stmt)
+        user = result.scalar_one_or_none()
+        procent = None
+        if user.status == UserStatus.BASE_VIP:
+            procent = 120
+        if user.status == UserStatus.MIDDLE_VIP:
+            procent = 130
+        if user.status == UserStatus.SUPER_VIP:
+            procent = 150
+        
+        if procent:
+            add_to = Decimal(add_to) * (Decimal(procent) / 100)
+
+        user.alter_balance = Decimal(f"{user.alter_balance}") + Decimal(add_to)
+
+        session.add(user)
+        await session.commit()
+
+        return {
+            "value": add_to,
+            "balance": user.balance
+        }
+    
 
 async def remove_balance(user_id: int, amount_to_remove: int | float | Decimal):
     """
@@ -284,4 +323,20 @@ async def get_top_users_by_legendary(limit: int = 10):
         )
         result = await session.execute(query)
         users = result.fetchall()
-        return users 
+        return users
+    
+    
+async def check_user_has_wife(wife_id: int, user_id: int):
+    async with async_session() as session:
+        query = (
+            select(User)
+            .join(User.characters)
+            .where(User.user_id == user_id)
+            .where(Wife.id == wife_id)
+        )
+
+        result = await session.execute(query)
+        user = result.scalar_one_or_none()
+        if not user:
+            return
+        return user

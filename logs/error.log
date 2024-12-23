@@ -86,3 +86,8 @@ WHERE slots.id = $1::VARCHAR]
 [parameters: ('3',)]
 (Background on this error at: https://sqlalche.me/e/20/f405)
 2024-12-18 16:07:48,105 - src.database.orm.shops - ERROR - Failed to cancel slot 3: The unique() method must be invoked on this Result, as it contains results that include joined eager loads against collections
+2024-12-21 14:38:45,412 - src.database.orm.shops - ERROR - Failed to create slot: (sqlalchemy.dialects.postgresql.asyncpg.IntegrityError) <class 'asyncpg.exceptions.ForeignKeyViolationError'>: insert or update on table "slots" violates foreign key constraint "slots_shop_id_fkey"
+DETAIL:  Key (shop_id)=(2) is not present in table "shop".
+[SQL: INSERT INTO slots (price, closed, selled, wife_id, shop_id, seller_id, created, updated) VALUES ($1::NUMERIC(25, 2), $2::BOOLEAN, $3::BOOLEAN, $4::BIGINT, $5::BIGINT, $6::BIGINT, now(), now()) RETURNING slots.id, slots.created, slots.updated]
+[parameters: (Decimal('100'), False, False, 1, 2, 944360812)]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)

@@ -41,13 +41,18 @@ async def help_command(message: types.Message):
                     
             <b>Главные команды:</b>
             /start - Начать работу с ботом
+            /main_menu - главное меню
             /help - Показать список команд
             /promo - Ввести промокод
             /vip - Купить VIP статус
             /top - Показать топ пользователей
             /profile - Просмотреть свой профиль
             /shop - Открыть рынок
-            /bonus - Получить ежечасный бонус
+            /bonus - Получить бонус
+            /find_from_title - поиск персонажа из тайтла
+            /find - поиск персонажа по имени
+            /my_wifes - ваш гарем
+            /everyday_shop - ежедневный магазин
 
             <b>Профиль:</b>
             /profile - Просмотр своего профиля
@@ -56,14 +61,11 @@ async def help_command(message: types.Message):
             /shop - Глобальный и локальный рынки
 
             <b>Игры:</b>
-            /tictactoe - Игра "Крестики-нолики"
-            /findball - Игра "Найди шарик"
-            /guessnumber - Игра "Угадай число"
-            /rps - Игра "Камень, ножницы, бумага"
+            /games - Наши игры
 
             <b>Вип и бонусы:</b>
             /vip - Покупка VIP статуса
-            /bonus - Получить ежечасный бонус
+            /bonus - Получить бонус
 
             <b>Примечание:</b>
             Для некоторых команд требуется баланс или специальный статус.
@@ -93,16 +95,25 @@ async def check_promo(message: types.Message, state: FSMContext):
 
 
 @router.message(Command("vip", "VIP"))
-async def buy_vip(message: types.Message):
+async def mess_vip(message: types.Message):
+    await buy_vip(message=message)
+
+
+@router.callback_query(F.data == "buy_vip")
+async def call_vip(callback: types.CallbackQuery):
+    await buy_vip(message=callback.message)
+
+
+async def buy_vip(message: types.Message | types.CallbackQuery):
     builder = InlineKeyboardBuilder()
     builder.button(text=f"Оплатить с помощью ⭐️stars⭐️", callback_data="vip_stars")
     builder.button(text=f"Банковский перевод", callback_data="card")
-
+    builder.adjust(1)
     await message.answer("Выберите метод оплаты:", reply_markup=builder.as_markup())
 
 @router.callback_query(F.data == "card")
 async def card_pay(callback: types.CallbackQuery):
-    await callback.message.answer("Для оплаты отправьте сумму в 100/159/200 рублей в зависимости от уровня VIP\nРеквизиты - 2200152319651066 (альфа банк)\nОтправьте ваш чек сюда @c0ral0vii")
+    await callback.message.answer("Для оплаты отправьте сумму в 100/159/200 рублей в зависимости от уровня VIP\nРеквизиты - 2200152319651066 (альфа банк)\nОтправьте ваш чек сюда @Sm0keLuv")
 
 
 @router.callback_query(F.data == "vip_stars")
@@ -142,4 +153,29 @@ async def send_invoice_handler(callback: types.CallbackQuery):
 
 @router.message(F.successful_payment)
 async def on_successful_payment(message: types.Message):
-    logger.debug(message.successful_payment.order_info)
+    payment_amount = message.successful_payment.total_amount
+
+    if payment_amount == 50:
+        await handle_50_stars(message)
+    elif payment_amount == 100:
+        await handle_100_stars(message)
+    elif payment_amount == 150:
+        await handle_150_stars(message)
+    else:
+        await handle_other_amount(message)
+
+
+async def handle_50_stars(message: types.Message):
+    logger.debug("Оплата на 50 звезд")
+    # Логика для обработки оплаты на 50 звезд
+
+async def handle_100_stars(message: types.Message):
+    logger.debug("Оплата на 100 звезд")
+    # Логика для обработки оплаты на 100 звезд
+
+async def handle_150_stars(message: types.Message):
+    logger.debug("Оплата на 150 звезд")
+    # Логика для обработки оплаты на 150 звезд
+
+async def handle_other_amount(message: types.Message):
+    await message.answer("Произошла ошибка, свяжитесь с нами и мы решим её")

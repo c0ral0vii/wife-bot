@@ -20,12 +20,12 @@ class RateLimitMiddleware(BaseMiddleware):
         if await self.redis_client.get(key):
             if isinstance(event, types.Message):
                 await event.answer(
-                    "Вы слишком часто используете бота. Пожалуйста, попробуйте позже.",
+                    "⛔ Вы слишком часто используете бота. Пожалуйста, попробуйте позже.",
                     show_alert=True
                 )
             elif isinstance(event, types.CallbackQuery):
                 await event.answer(
-                    "Вы слишком часто используете бота. Пожалуйста, попробуйте позже.",
+                    "⛔ Вы слишком часто используете бота. Пожалуйста, попробуйте позже.",
                     show_alert=True
                 )
             return

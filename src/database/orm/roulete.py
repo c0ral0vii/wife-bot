@@ -1,11 +1,12 @@
 import random
+from typing import List
 from sqlalchemy import select, and_
 from sqlalchemy.orm import selectinload
 from src.database.models import User, Wife, AllRares, UserStatus
 from src.database.database import async_session  # Предполагается, что у вас есть фабрика сессий
 
 
-async def spin_character(user_id: int, rarity: AllRares = None) -> Wife:
+async def spin_character(user_id: int, rarity: AllRares = None, characters: List[Wife] = None) -> Wife:
     """
     Прокрутка персонажа с учетом редкости.
     Если редкость не указана, то выбирается случайная редкость с учетом процентов.
@@ -53,6 +54,7 @@ async def spin_character(user_id: int, rarity: AllRares = None) -> Wife:
         # Получаем список ID вайф, которые уже есть у пользователя
         user_wife_ids = {wife.id for wife in user.characters}
 
+
         # Выбираем редкость с учетом процентов, если она не указана
         if rarity is None:
             rarity = random.choices(
@@ -60,6 +62,25 @@ async def spin_character(user_id: int, rarity: AllRares = None) -> Wife:
                 weights=SPIN_PROBABILITIES.values(),
                 k=1
             )[0]
+
+        if characters:
+            available_characters = [char for char in characters if char.id not in user_wife_ids]
+
+            filtered_characters = [char for char in available_characters if char.rare == rarity]
+
+            if not filtered_characters:
+                raise ValueError(f"Для вас персонажей этой редкости нет -> {rarity.value}.")
+
+            # Выбираем случайный персонаж из списка
+            win_character = random.choice(filtered_characters)
+
+            # Добавляем выигранного персонажа в коллекцию пользователя
+            user.characters.append(win_character)
+
+            # Сохраняем изменения в базе данных
+            await session.commit()
+
+            return win_character
 
         # Получаем всех персонажей с выбранной редкостью, которых нет у пользователя
         query = select(Wife).where(
@@ -71,7 +92,7 @@ async def spin_character(user_id: int, rarity: AllRares = None) -> Wife:
         characters = result.scalars().all()
 
         if not characters:
-            raise ValueError(f"Для вас персонажей этой редкости нет -> {rarity.value}.")
+            raise ValueError(f"Похоже персонажи этой редкости кончились или их больше нет для выбранного тайтла -> {rarity.value}.")
 
         # Выбираем случайный персонаж из списка
         win_character = random.choice(characters)

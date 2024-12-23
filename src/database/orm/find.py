@@ -4,7 +4,7 @@ from sqlalchemy import select, or_
 from sqlalchemy.orm import selectinload
 
 
-async def find_characters(text: str):
+async def find_characters(text: str, from_title: str = False):
     if not text:
         return 
     
@@ -12,15 +12,17 @@ async def find_characters(text: str):
     
     async with async_session() as session:
         stmt = select(Wife).where(or_(
-            Wife.from_.ilike(search_pattern),
             Wife.name.ilike(search_pattern),
-            Wife.id.ilike(search_pattern),
         ))
-        
+        if from_title:
+            stmt = select(Wife).where(or_(
+                Wife.from_.ilike(search_pattern)
+            ))
+
         result = await session.execute(stmt)
-        wives = result.scalars().first()
+        wifes = result.scalars().all()
         
-        if not wives:
+        if not wifes:
             return 
         
-        return wives
+        return wifes

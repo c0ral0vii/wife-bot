@@ -66,6 +66,9 @@ class User(Base):
                                                 default=UserStatus.NOT_VIP)
     vip_to: Mapped[Date] = mapped_column(Date, nullable=True) 
     balance: Mapped[Decimal] = mapped_column(Numeric(precision=25, scale=2), default=Decimal('0.00'))
+    alter_balance: Mapped[Decimal] = mapped_column(Numeric(precision=25, scale=2), default=Decimal('0.00'))
+    alter_shop_level: Mapped[int] = mapped_column(Integer, default=1)
+    
     profile_imgs: Mapped[str] = mapped_column(String, nullable=False)
 
     characters: Mapped[list["Wife"]] = relationship(
@@ -182,3 +185,12 @@ class Promo(Base):
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     promo: Mapped[str] = mapped_column(String)
     bonus: Mapped[float] = mapped_column(Numeric(precision=25, scale=2), default=0.00)
+
+
+class ProductGroups(Base):
+    __tablename__ = "products"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    group: Mapped[str] = mapped_column(String)
+    bonus: Mapped[float] = mapped_column(Numeric(precision=25, scale=2), default=Decimal("1000.00"))
+    

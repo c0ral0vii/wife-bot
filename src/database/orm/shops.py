@@ -35,6 +35,30 @@ async def create_local_shop(chat_id: int, type: ShopTypes) -> Shop:
             await session.rollback()
 
 
+async def create_global_shop(chat_id = 1, type = ShopTypes.GLOBAL):
+    async with async_session() as session:
+            try:
+                stmt = select(Shop).where(Shop.chat_id == chat_id)
+                result = await session.execute(stmt)
+                shop = result.scalar_one_or_none()
+
+                if shop:
+                    return shop
+                
+                shop = Shop(
+                    chat_id = chat_id,
+                    type = type,
+                )
+
+                session.add(shop)
+                await session.commit()
+
+                return shop
+            except Exception as e:
+                logger.warning(f"Не удалось создать локальный рынок - {chat_id}")
+                await session.rollback()
+
+
 async def create_slot(user_id: int, wife_id: int, price: float | int, shop_id: int) -> Slot:
     async with async_session() as session:
         try:
@@ -199,7 +223,7 @@ async def purchase_slot(slot_id: int, buyer_user_id: int) -> dict:
                 return {"status": "error", "message": "Insufficient balance."}
             
             if buyer.user_id == slot.seller.user_id:
-                return {"status": "error", "message": "Cannot buy your own slot."}
+                return {"status": "error", "message": "Вы не можете купить свой же лот!"}
 
             # Update balances and ownership
             buyer.balance -= slot.price

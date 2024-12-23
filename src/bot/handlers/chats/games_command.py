@@ -1,20 +1,42 @@
 from aiogram import Router, F, types
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from aiogram.filters import Command
+from aiogram.filters import Command, StateFilter
 import random
 from decimal import Decimal
 from src.database.orm.users import add_balance
 from src.redis.services import redis_manager
+from src.logger import setup_logger
+from aiogram.fsm.state import State, StatesGroup
+from aiogram.fsm.context import FSMContext
+from src.database.orm.users import add_alter_balance
 
 
 router = Router()
+logger = setup_logger(__name__)
+
+class Game(StatesGroup):
+    game = State()
 
 
-@router.message(F.text == "Игры")
-@router.message(F.text == "!игры")
-async def games(message: types.Message):
-    await message.answer(f"Все доступные игры:\n/tictactoe - крестики, нолики\n/findball - найти шарик в стакане\n/guessnumber - угадай число\n/rps - камень ножницы бумага")
+@router.message(Command("games"))
+async def mess_games(message: types.Message):
+    await games_func(message=message)
+
+
+@router.callback_query(F.data == "mini-games")
+async def call_games(callback: types.CallbackQuery):
+    await games_func(message=callback.message)
+
+
+async def games_func(message: types.Message | types.CallbackQuery):
+    await message.answer(f"🕹️Все доступные игры:",
+                        reply_markup=InlineKeyboardMarkup(
+                            inline_keyboard=[[InlineKeyboardButton(text="❌Крестики нолики", callback_data="tictactoe")], [InlineKeyboardButton(text="🥛Найти шарик в стакане", callback_data="findball")],
+                            [InlineKeyboardButton(text="🪨Камень, ножницы, бумага", callback_data="rps")], [InlineKeyboardButton(text="🔢Угадай число", callback_data="guessnumber")],
+                            ],
+                        ))
+
 
 games = {}
 
@@ -95,15 +117,17 @@ def bot_move_hard(board):
                     best_move = (i, j)
     return best_move
 
-@router.message(Command("tictactoe"))
-async def start_tictactoe(message: types.Message):
+
+@router.callback_query(F.data == "tictactoe")
+async def start_tictactoe(callback: types.CallbackQuery):
     builder = InlineKeyboardBuilder()
     builder.row(
         InlineKeyboardButton(text="Легкий", callback_data="ttt_easy"),
         InlineKeyboardButton(text="Средний", callback_data="ttt_medium"),
         InlineKeyboardButton(text="Сложный", callback_data="ttt_hard"),
     )
-    await message.answer("Выберите уровень сложности:", reply_markup=builder.as_markup())
+    await callback.message.answer("Выберите уровень сложности:", reply_markup=builder.as_markup())
+
 
 @router.callback_query(lambda c: c.data.startswith("ttt_"))
 async def ttt_level_selected(callback_query: types.CallbackQuery):
@@ -142,7 +166,7 @@ async def get_game_keyboard(user_id):
 async def ttt_move(callback_query: types.CallbackQuery):
     user_id = callback_query.from_user.id
     if user_id not in games:
-        await callback_query.message.edit_text("Игра не начата. Используйте /tictactoe, чтобы начать.")
+        await callback_query.message.edit_text("Игра не начата.")
         await callback_query.answer()
         return
 
@@ -155,9 +179,28 @@ async def ttt_move(callback_query: types.CallbackQuery):
     games[user_id]["board"][i][j] = "X"
     winner = check_winner(games[user_id]["board"])
     if winner:
-        await callback_query.message.edit_text(f"Победитель: {winner}!", reply_markup=None)
+        if games[user_id]["difficalty"] == "easy":
+            value = 500
+            alter_value = 1
+        elif games[user_id]["difficalty"] == "medium":
+            value = 750
+            alter_value = 3
+
+        elif games[user_id]["difficalty"] == "hard":
+            value = 1200
+            alter_value = 5
+
+        else:
+            value = 1000
+            alter_value = 2
+
+
+        added = await add_balance(user_id=user_id, add_to=Decimal(value))
+        alter_added = await add_alter_balance(user_id=user_id, add_to=Decimal(alter_value))
+        await callback_query.message.answer(f"За победу вам начислено 💠{added["value"]}, 🔰{alter_added["value"]}", 
+                                            message_effect_id="5104841245755180586")
         del games[user_id]
-        await callback_query.answer()
+        await callback_query.answer("Вы выйграли!", show_alert=False)
         return
     if is_full(games[user_id]["board"]):
         await callback_query.message.edit_text("Ничья!", reply_markup=None)
@@ -207,15 +250,15 @@ async def ttt_move(callback_query: types.CallbackQuery):
     await callback_query.answer()
 
 
-@router.message(Command("findball"))
-async def start_find_ball(message: types.Message):
+@router.callback_query(F.data == "findball")
+async def start_find_ball(callback: types.CallbackQuery):
     builder = InlineKeyboardBuilder()
     builder.row(
         InlineKeyboardButton(text="Легкий", callback_data="ball_easy"),
         InlineKeyboardButton(text="Средний", callback_data="ball_medium"),
         InlineKeyboardButton(text="Сложный", callback_data="ball_hard"),
     )
-    await message.answer("Выберите уровень сложности:", reply_markup=builder.as_markup())
+    await callback.message.answer("Выберите уровень сложности:", reply_markup=builder.as_markup())
 
 @router.callback_query(lambda c: c.data.startswith("ball_"))
 async def ball_level_selected(callback_query: types.CallbackQuery):
@@ -247,9 +290,9 @@ async def ball_level_selected(callback_query: types.CallbackQuery):
     games[user_id] = {"ball_position": ball_position, "num_cups": num_cups, "difficalty": level}
     builder = InlineKeyboardBuilder()
     for i in range(1, num_cups + 1):
-        builder.add(InlineKeyboardButton(text=f"Стакан {i}", callback_data=f"stakan_{i}"))
+        builder.add(InlineKeyboardButton(text=f"->🥛<-", callback_data=f"stakan_{i}"))
     builder.adjust(num_cups)
-    await callback_query.message.edit_text(f"Шарик спрятан под одним из {num_cups} стаканов. Угадай!", reply_markup=builder.as_markup())
+    await callback_query.message.edit_text(f"Шарик спрятан под одним из {num_cups} 🥛стаканов. Угадай!", reply_markup=builder.as_markup())
     await callback_query.answer()
 
 @router.callback_query(lambda c: c.data.startswith("stakan_"))
@@ -268,23 +311,31 @@ async def process_ball_guess(callback_query: types.CallbackQuery):
     if guess == games[user_id]["ball_position"]:
         if games[user_id]["difficalty"] == "easy":
             value = 750
+            alter_value = 1
         elif games[user_id]["difficalty"] == "medium":
             value = 1000
+            alter_value = 3
+
         elif games[user_id]["difficalty"] == "hard":
             value = 1500
+            alter_value = 5
+
         else:
             value = 1000
+            alter_value = 2
+
+        alter_added = await add_alter_balance(user_id=user_id, add_to=Decimal(alter_value))
         added = await add_balance(user_id=user_id, add_to=Decimal(value))
         await callback_query.message.delete()
-        await callback_query.message.answer(f"Правильно! Ты нашел шарик!Твой выигрыш💰 - {added["value"]}", message_effect_id="5104841245755180586")
+        await callback_query.message.answer(f"Правильно! Ты нашел шарик!Твой выигрыш - 💠{added["value"]}, 🔰{alter_added["value"]}", message_effect_id="5104841245755180586")
     else:
         await callback_query.message.edit_text(f"Неправильно. Шарик был под стаканом {games[user_id]['ball_position']}.", reply_markup=None)
     del games[user_id]
     await callback_query.answer()
 
 
-@router.message(Command("guessnumber"))
-async def start_guess_number(message: types.Message):
+@router.callback_query(F.data == "guessnumber")
+async def start_guess_number(callback: types.CallbackQuery):
     builder = InlineKeyboardBuilder()
     builder.row(
         InlineKeyboardButton(text="Легкий", callback_data="guess_number_easy"),
@@ -292,10 +343,11 @@ async def start_guess_number(message: types.Message):
         InlineKeyboardButton(text="Сложный", callback_data="guess_number_hard"),
     )
     
-    await message.answer("Выберите уровень сложности:", reply_markup=builder.as_markup())
+    await callback.message.answer("Выберите уровень сложности:", reply_markup=builder.as_markup())
+
 
 @router.callback_query(lambda c: c.data.startswith("guess_number_"))
-async def guess_level_selected(callback_query: types.CallbackQuery):
+async def guess_level_selected(callback_query: types.CallbackQuery, state: FSMContext):
     user_id = callback_query.from_user.id
     level = callback_query.data.split("_")[-1]
     if level == "easy":
@@ -327,10 +379,14 @@ async def guess_level_selected(callback_query: types.CallbackQuery):
     secret_number = random.randint(min_num, max_num)
     games[user_id] = {"secret_number": secret_number, 'difficalty': level,"min_num": min_num, "max_num": max_num, "attempts": 0, "max_attemps": max_attemps}
     await callback_query.message.edit_text(f"Угадайте число от {min_num} до {max_num}. Максимальное количество попыток: {max_attemps}", reply_markup=None)
+
+    await state.set_state(Game.game)
     await callback_query.answer()
 
-@router.message(lambda message: message.text.isdigit())
-async def process_guess_number(message: types.Message):
+
+
+@router.message(lambda message: message.text.isdigit(), StateFilter(Game.game))
+async def process_guess_number(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
     if user_id not in games:
         await message.answer("Игра не начата. Используйте /guessnumber, чтобы начать.")
@@ -341,6 +397,7 @@ async def process_guess_number(message: types.Message):
     if games[user_id]["attempts"] == games[user_id]["max_attemps"]:
         await message.answer("Вы проиграли! Попробуйте еще раз")
         del games[user_id]
+        await state.clear()    
         return
     
     if guess < games[user_id]["min_num"] or guess > games[user_id]["max_num"]:
@@ -354,27 +411,37 @@ async def process_guess_number(message: types.Message):
     else:
         if games[user_id]["difficalty"] == "easy":
             value = 750
+            alter_value = 1
         elif games[user_id]["difficalty"] == "medium":
             value = 1000
+            alter_value = 3
+
         elif games[user_id]["difficalty"] == "hard":
             value = 1500
+            alter_value = 5
+
         else:
             value = 1000
+            alter_value = 2
 
         added = await add_balance(user_id=user_id, add_to=Decimal(value))
-        await message.answer(f"Правильно! Вы угадали число за {games[user_id]['attempts']} попыток.\nВаш выйгрыш 💰{added["value"]}", message_effect_id="5104841245755180586")
+        alter_added = await add_alter_balance(user_id=user_id, add_to=Decimal(alter_value))
+
+        await message.answer(f"Правильно! Вы угадали число за {games[user_id]['attempts']} попыток.\nВаш выйгрыш 💠{added["value"]}, 🔰{alter_added["value"]}", message_effect_id="5104841245755180586")
         del games[user_id]
+        await state.clear()    
+    
 
 
-@router.message(Command("rps"))
-async def start_rps(message: types.Message):
+@router.callback_query(F.data == "rps")
+async def start_rps(callback: types.CallbackQuery):
     builder = InlineKeyboardBuilder()
     builder.row(
         InlineKeyboardButton(text="Легкий", callback_data="rps_level_easy"),
         InlineKeyboardButton(text="Средний", callback_data="rps_level_medium"),
         InlineKeyboardButton(text="Сложный", callback_data="rps_level_hard"),
     )
-    await message.answer("Выберите уровень сложности:", reply_markup=builder.as_markup())
+    await callback.message.answer("Выберите уровень сложности:", reply_markup=builder.as_markup())
 
 @router.callback_query(lambda c: c.data.startswith("rps_level_"))
 async def rps_level_selected(callback_query: types.CallbackQuery):
@@ -413,6 +480,8 @@ async def rps_play(callback_query: types.CallbackQuery):
     if result == "user":
         level = games.get(user_id, {}).get("level", "easy")
         reward = Decimal(500) if level == "easy" else Decimal(750) if level == "medium" else Decimal(1500)
+        alter_reward = Decimal(1) if level == "easy" else Decimal(3) if level == "medium" else Decimal(5)
+        alter_added = await add_alter_balance(user_id=user_id, add_to=alter_reward)
         added = await add_balance(user_id=user_id, add_to=reward)
         await callback_query.message.edit_text(f"Вы выбрали {user_choice}. Вы выиграли! Баланс добавлен: {added["value"]}")
     elif result == "bot":

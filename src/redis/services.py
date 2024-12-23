@@ -9,6 +9,10 @@ class RedisManager:
         """
         self.redis = Redis(host=host, port=port, password=password)
 
+
+    async def get_redis(self):
+        return self.redis
+    
     async def set_with_ttl(self, key: str, value: str, ttl: int):
         """
         Установить строку с временем жизни (в секундах).
