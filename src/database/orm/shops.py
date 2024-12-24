@@ -1,4 +1,6 @@
 from sqlalchemy import select, delete, and_
+from sqlalchemy.exc import IntegrityError
+
 from src.database.models import Shop, ShopTypes, Slot, User, Wife
 from sqlalchemy.orm import selectinload
 from src.database.database import async_session
@@ -110,7 +112,12 @@ async def get_all_slots_from_shop(chat_id: int) -> list[Slot]:
         shop = result.unique().scalar_one_or_none()
         
         if shop:
-            return shop.slots
+            ready_slots = []
+            for i in shop.slots:
+                if i.closed or i.selled:
+                    continue
+                ready_slots.append(i)
+            return ready_slots
         else:
             return []
     
@@ -205,10 +212,10 @@ async def purchase_slot(slot_id: int, buyer_user_id: int) -> dict:
             slot = result.scalar_one_or_none()
 
             if not slot:
-                return {"status": "error", "message": "Slot not found."}
+                return {"status": "error", "message": "Не найден слот на продажу"}
             
             if slot.closed or slot.selled:
-                return {"status": "error", "message": "Slot is already closed or sold."}
+                return {"status": "error", "message": "Этот слот был продан"}
             
             # Fetch the buyer user
             buyer_stmt = select(User).options(joinedload(User.characters)).where(User.user_id == buyer_user_id)
@@ -216,11 +223,11 @@ async def purchase_slot(slot_id: int, buyer_user_id: int) -> dict:
             buyer = buyer_result.unique().scalar_one_or_none()
 
             if not buyer:
-                return {"status": "error", "message": "Buyer user not found."}
+                return {"status": "error", "message": "Покупатель не найден."}
             
             # Check if buyer has enough balance
             if buyer.balance < slot.price:
-                return {"status": "error", "message": "Insufficient balance."}
+                return {"status": "error", "message": "Недостаточно средств"}
             
             if buyer.user_id == slot.seller.user_id:
                 return {"status": "error", "message": "Вы не можете купить свой же лот!"}
@@ -236,7 +243,12 @@ async def purchase_slot(slot_id: int, buyer_user_id: int) -> dict:
 
             await session.commit()
 
-            return {"status": "success", "message": "Slot purchased successfully."}
+            return {"status": "success", "message": "Слот успешно куплен"}
+        except IntegrityError as e:
+            logger.error(f"Failed to purchase slot {slot_id}: {e}")
+            await session.rollback()  # Откат изменений
+            return {"status": "error", "message": "Такой персонаж у вас уже есть"}
+
         except Exception as e:
             logger.error(f"Failed to purchase slot {slot_id}: {e}")
             await session.rollback()  # Откат изменений

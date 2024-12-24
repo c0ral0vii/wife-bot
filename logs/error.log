@@ -91,3 +91,13 @@ DETAIL:  Key (shop_id)=(2) is not present in table "shop".
 [SQL: INSERT INTO slots (price, closed, selled, wife_id, shop_id, seller_id, created, updated) VALUES ($1::NUMERIC(25, 2), $2::BOOLEAN, $3::BOOLEAN, $4::BIGINT, $5::BIGINT, $6::BIGINT, now(), now()) RETURNING slots.id, slots.created, slots.updated]
 [parameters: (Decimal('100'), False, False, 1, 2, 944360812)]
 (Background on this error at: https://sqlalche.me/e/20/gkpj)
+2024-12-23 05:43:06,307 - src.database.orm.shops - ERROR - Failed to purchase slot 8: (sqlalchemy.dialects.postgresql.asyncpg.IntegrityError) <class 'asyncpg.exceptions.UniqueViolationError'>: duplicate key value violates unique constraint "user_wife_association_pkey"
+DETAIL:  Key (user_id, wife_id)=(1, 30) already exists.
+[SQL: INSERT INTO user_wife_association (user_id, wife_id) VALUES ($1::BIGINT, $2::BIGINT)]
+[parameters: (1, 30)]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2024-12-23 05:44:44,237 - src.database.orm.shops - ERROR - Failed to purchase slot 8: (sqlalchemy.dialects.postgresql.asyncpg.IntegrityError) <class 'asyncpg.exceptions.UniqueViolationError'>: duplicate key value violates unique constraint "user_wife_association_pkey"
+DETAIL:  Key (user_id, wife_id)=(1, 30) already exists.
+[SQL: INSERT INTO user_wife_association (user_id, wife_id) VALUES ($1::BIGINT, $2::BIGINT)]
+[parameters: (1, 30)]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)

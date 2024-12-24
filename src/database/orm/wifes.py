@@ -97,8 +97,15 @@ async def my_wifes(user_id: int) -> list:
 
         if not user:
             return
-        
-        return user.characters
+        rare_order = {
+            "Легендарный": 1,
+            "Эпический": 2,
+            "Редкий": 3,
+            "Обычный": 4
+        }
+
+        sorted_wifes = sorted(user.characters, key=lambda wife: rare_order.get(wife.rare.value, 0), reverse=True)
+        return sorted_wifes
     
 
 async def add_wife(data: dict):

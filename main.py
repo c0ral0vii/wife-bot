@@ -4,7 +4,10 @@ from aiogram import Bot, Dispatcher, types
 from src.logger import setup_logger
 from src.config.config import settings
 from src.bot.handlers.admins import (
-    admin_start
+    admin_start,
+
+    add_admins,
+    block_users,
 )
 from src.parser.services import parse
 
@@ -38,8 +41,13 @@ dp = Dispatcher()
 logger = setup_logger(__name__)
 
 dp.pre_checkout_query.register(start_handler.on_pre_checkout_query)
+
+
 dp.message.middleware(antiflood.RateLimitMiddleware())
 dp.message.middleware(block_middleware.BlockMiddleware())
+dp.callback_query.middleware(antiflood.RateLimitMiddleware())
+dp.callback_query.middleware(block_middleware.BlockMiddleware())
+
 
 dp.include_routers(
     main_menu.router,
@@ -57,6 +65,8 @@ dp.include_routers(
     everyday_shop.router,
 
     admin_start.router,
+    add_admins.router,
+    block_users.router,
 )
 
 

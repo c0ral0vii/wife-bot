@@ -29,25 +29,25 @@ async def call_my_wifes(callback: types.CallbackQuery, state: FSMContext):
 
 @router.message(Command("my_wifes"))
 async def mess_my_wifes(message: types.Message, state: FSMContext):
-    await all_my_wifes(callback=message, state=state, message=True)
+    await all_my_wifes(callback=message, state=state, message_=True)
 
-async def all_my_wifes(callback: types.CallbackQuery | types.Message, state: FSMContext, message=False):
-    await state.clear()
+async def all_my_wifes(callback: types.CallbackQuery | types.Message, state: FSMContext, message_=False):
     user_id = callback.from_user.id
     wifes = await my_wifes(user_id=user_id)
     chunks = list(chunked(wifes, 5))
     await state.set_state(PaginationState.page)
     await state.update_data(page=1, max_pages=len(chunks), pages=chunks, use_user_id=user_id)
 
-    if message:
+    if message_:
         if len(chunks) > 0:
             await callback.answer("Ваш гарем:", reply_markup=await pagination_kb(page=1, list_requests=chunks[0], max_page=len(chunks), user_id=user_id, my_slots=True))
         else:
             await callback.answer("Ваш гарем пуст")
-    if len(chunks) > 0:
-        await callback.message.answer("Ваш гарем:", reply_markup=await pagination_kb(page=1, list_requests=chunks[0], max_page=len(chunks), user_id=user_id, my_slots=True))
     else:
-        await callback.message.answer("Ваш гарем пуст")
+        if len(chunks) > 0:
+            await callback.message.answer("Ваш гарем:", reply_markup=await pagination_kb(page=1, list_requests=chunks[0], max_page=len(chunks), user_id=user_id, my_slots=True))
+        else:
+            await callback.message.answer("Ваш гарем пуст")
 
 
 @router.callback_query(F.data.startswith("refresh_"), StateFilter(PaginationState))
@@ -146,6 +146,10 @@ async def select_wife(callback: types.CallbackQuery, state: FSMContext):
     await callback.message.answer_photo(photo=photo, caption=f"""Информация о персонаже:\n🆔 {character.id}\n👤 Полное имя: {character.name}\n🌸 Тайтл: {character.from_.split(",")[0]}\n💎 Редкость: {color}{character.rare.value}
                                 """, reply_markup=InlineKeyboardMarkup(
                                     inline_keyboard=[
-                                        [InlineKeyboardButton(text="Установить на аву", callback_data=f"set_on_photo_{character.id}")]
+                                        [InlineKeyboardButton(text="Установить на аву",
+                                                              callback_data=f"set_on_photo_{character.id}")],
+                                        [InlineKeyboardButton(text="Выставить на продажу",
+                                                              callback_data=f"on_slot_{character.id}")],
+
                                     ]
                                 ))

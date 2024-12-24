@@ -1,6 +1,6 @@
 from typing import Dict, Any, NoReturn, Union
 from sqlalchemy import select, func
-from sqlalchemy.orm import aliased, joinedload
+from sqlalchemy.orm import aliased, joinedload, selectinload
 from decimal import Decimal
 
 from src.database.database import async_session
@@ -9,35 +9,34 @@ from src.database.models import User, UserStatus, Wife, user_wife_association, A
 async def create_user(data: Dict[str, Any]) -> Dict:
     try:
         async with async_session() as session:
-            async with async_session() as session:
-                stmt = select(User).where(User.user_id == data.get("user_id"))
-                result = await session.execute(stmt)
-                user = result.scalar_one_or_none()
-                
-                if user:
-                    return {
-                        "create": False,
-                        "id": user.id,
-                        "data": user,
-                        "user_id": data.get("user_id"),
-                        "text": "Существует"
-                    }
-                
-                user = User(
-                    user_id=data.get("user_id"),
-                    username=data.get("username", "Не задано"),
-                    profile_imgs="./media/profiles/default/",
-                )
-                session.add(user)
-                await session.commit()
-                
+            stmt = select(User).options(selectinload(User.characters)).where(User.user_id == data.get("user_id"))
+            result = await session.execute(stmt)
+            user = result.scalar_one_or_none()
+
+            if user:
                 return {
-                    "create": True,
+                    "create": False,
                     "id": user.id,
                     "data": user,
                     "user_id": data.get("user_id"),
-                    "text": "Создан"
+                    "text": "Существует"
                 }
+
+            user = User(
+                user_id=data.get("user_id"),
+                username=data.get("username", "Не задано"),
+                profile_imgs="./media/profiles/default/",
+            )
+            session.add(user)
+            await session.commit()
+
+            return {
+                "create": True,
+                "id": user.id,
+                "data": user,
+                "user_id": data.get("user_id"),
+                "text": "Создан"
+            }
     except Exception as e:
         print(e)
         await session.rollback()
