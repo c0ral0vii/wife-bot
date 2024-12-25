@@ -6,6 +6,7 @@ from src.config.config import settings
 from src.bot.handlers.admins import (
     admin_start,
 
+    add_promo,
     add_admins,
     block_users,
 )
@@ -67,6 +68,7 @@ dp.include_routers(
     admin_start.router,
     add_admins.router,
     block_users.router,
+    add_promo.router,
 )
 
 
