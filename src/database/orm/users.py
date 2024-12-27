@@ -339,3 +339,12 @@ async def check_user_has_wife(wife_id: int, user_id: int):
         if not user:
             return
         return user
+
+
+async def get_users():
+    async with async_session() as session:
+        stmt = select(User)
+        result = await session.execute(stmt)
+        users = result.scalars().all()
+
+        return users

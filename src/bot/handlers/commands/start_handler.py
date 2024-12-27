@@ -7,6 +7,7 @@ from src.logger import setup_logger
 from src.bot.keyboards.reply import start_kb
 from src.database.orm.users import check_vip, create_user
 from src.database.orm.promo import get_promo
+from src.redis.services import redis_manager
 from src.utils.create_file import create_file_profile
 from src.database.orm.users import add_balance
 from decimal import Decimal
@@ -84,11 +85,19 @@ async def promo_command(message: types.Message, state: FSMContext):
 async def check_promo(message: types.Message, state: FSMContext):
 
     result = await get_promo(promocode=message.text)
-
     if result is None:
         await message.answer("Такого промокода не существует")
     else:
+        redis_key = f"promo:{message.from_user.id}:{message.text}"
+
+        promo_get = await redis_manager.get(redis_key)
+        if promo_get:
+            await message.answer("Вы уже вводили этот промокод!")
+            return
+
         added = await add_balance(add_to=Decimal(result), user_id=message.from_user.id)
+        await redis_manager.set_with_ttl(key=redis_key, value="use", ttl=604800)
+
         await message.answer(f"Вы ввели промокод на {added["value"]} бонусов")
         
     await state.clear()
@@ -139,7 +148,7 @@ async def on_pre_checkout_query(
 async def send_invoice_handler(callback: types.CallbackQuery):  
     callback_data = callback.data.split("_")[-1]
 
-    prices = [types.LabeledPrice(label="Оплатить Vip", amount=callback_data)]
+    prices = [types.LabeledPrice(label="Оплатить Vip", amount=int(callback_data))]
     
     await callback.message.answer_invoice(  
         title="Донат",  

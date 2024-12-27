@@ -28,6 +28,7 @@ class TradeState(StatesGroup):
 def contains_only_digits(text: str) -> bool:
     return text.isdigit()
 
+
 @router.message(F.text.startswith("🔄 Обмен"))
 async def trade_shop(message: types.Message, state: FSMContext):
     ...

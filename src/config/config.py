@@ -27,6 +27,7 @@ class Settings(BaseSettings):
     DEBUG: bool = False
     # ADMINs
     ADMIN_LIST: list = [944360812, 1446921741]
+
     @property
     def database_link(self):
          return f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASS}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"

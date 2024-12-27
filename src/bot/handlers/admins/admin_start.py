@@ -6,6 +6,7 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 router = Router()
 router.message.middleware(admin_middleware.AdminMiddleware())
+router.callback_query.middleware(admin_middleware.AdminMiddleware())
 
 
 @router.message(Command("admin"))
@@ -16,8 +17,11 @@ async def start_admin(message: types.Message):
                                  [InlineKeyboardButton(text="Заблокировать пользователя 🚫",
                                                        callback_data="banned_user"),
                                   InlineKeyboardButton(text="Админы 👑", callback_data="added_admin")],
+
                                  [InlineKeyboardButton(text="Добавить рекламу 📢", callback_data="promoute"),
-                                  InlineKeyboardButton(text="Добавить промокод 🎟️", callback_data="promocode")]
+                                  InlineKeyboardButton(text="Добавить промокод 🎟️", callback_data="promocode")],
+
+                                 [InlineKeyboardButton(text="Добавить пользователю VIP", callback_data="add_vip")],
                              ]
                          ))
 
@@ -51,6 +55,7 @@ async def promoute(callback: types.CallbackQuery):
             [InlineKeyboardButton(text="Добавить группу для рекламы 📢", callback_data="add_group"),
              InlineKeyboardButton(text="Удалить группу ❌", callback_data="remove_group")],
             [InlineKeyboardButton(text="Список рекламных групп 📜", callback_data="list_group")],
+            [InlineKeyboardButton(text="Разослать сообщения с группами 💬", callback_data="send_all")],
         ]
     ))
 

@@ -9,6 +9,8 @@ from src.bot.handlers.admins import (
     add_promo,
     add_admins,
     block_users,
+    add_group,
+    add_vip_user,
 )
 from src.parser.services import parse
 
@@ -27,6 +29,7 @@ from src.bot.handlers.clients import (
     select_on_photo,
     everyday_shop,
     main_menu,
+    check_group,
 )
 from src.bot.handlers.commands import (
     start_handler,
@@ -64,11 +67,14 @@ dp.include_routers(
     trade_handler.router,
     select_on_photo.router,
     everyday_shop.router,
+    check_group.router,
 
     admin_start.router,
     add_admins.router,
     block_users.router,
     add_promo.router,
+    add_group.router,
+    add_vip_user.router,
 )
 
 
@@ -89,7 +95,9 @@ async def on_starup():
         types.BotCommand(command="/vip", description="Покупка VIP"), #
         types.BotCommand(command="/promo", description="Промокод"), #
         types.BotCommand(command="/games", description="Игры"), #
-        types.BotCommand(command="/trade", description="Обменять"), 
+        types.BotCommand(command="/trade", description="Обменять"), #
+
+        types.BotCommand(command="/trade_shop", description="Рынок обменов"),
         types.BotCommand(command="/top", description="Топ пользователей"), #
     ]
 

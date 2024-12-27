@@ -9,7 +9,7 @@ engine = create_async_engine(
     _DATABASE_URL,
     echo=settings.get_debug_settings,
     # poll_size=10,
-    max_overflow=15,
+    max_overflow=20,
 )
 
 
