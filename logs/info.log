@@ -1240,3 +1240,13 @@ DETAIL:  Key (user_id, wife_id)=(1, 30) already exists.
 2024-12-27 01:16:44,301 - src.spammer.services - WARNING - Telegram server says - Bad Request: chat not found
 2024-12-27 01:16:55,671 - src.spammer.services - WARNING - Telegram server says - Bad Request: chat not found
 2024-12-27 01:16:55,671 - src.spammer.services - WARNING - Telegram server says - Bad Request: chat not found
+2024-12-27 19:02:34,744 - __main__ - INFO - Инициализация
+2024-12-27 19:02:34,828 - __main__ - INFO - Запуск
+2024-12-27 19:03:42,362 - __main__ - INFO - Инициализация
+2024-12-27 19:03:42,467 - __main__ - INFO - Запуск
+2024-12-27 19:12:48,767 - __main__ - INFO - Инициализация
+2024-12-27 19:12:48,851 - __main__ - INFO - Запуск
+2024-12-27 19:15:50,766 - __main__ - INFO - Инициализация
+2024-12-27 19:15:50,886 - __main__ - INFO - Запуск
+2024-12-27 19:17:35,183 - __main__ - INFO - Инициализация
+2024-12-27 19:17:35,339 - __main__ - INFO - Запуск

@@ -6,11 +6,12 @@ from aiogram.fsm.state import StatesGroup, State
 from src.bot.middlewares.admin_middleware import AdminMiddleware
 from src.database.models import UserStatus
 from src.database.orm.vip_users import set_vip_status
+from src.logger import setup_logger
 
 router = Router()
 
-@router.message.middleware(AdminMiddleware())
-@router.callback_query.middleware(AdminMiddleware())
+router.message.middleware(AdminMiddleware())
+router.callback_query.middleware(AdminMiddleware())
 
 
 class AddVipUser(StatesGroup):
@@ -30,22 +31,25 @@ async def add_vip_user(callback_query: types.CallbackQuery, state: FSMContext):
                                             ]
                                         ))
 
-
+logger = setup_logger(__name__)
 @router.callback_query(F.data.startswith("add_vip_"), StateFilter(AddVipUser.user_id))
 async def add_vip_1(callback_query: types.CallbackQuery, state: FSMContext):
     await state.set_state(AddVipUser.add_vip)
-    if int(callback_query.data.split("_")[-1]) == 1:
+    callback_data = int(callback_query.data.split("_")[-1])
+    logger.debug(callback_data)
+    if  callback_data == 1:
         vip_status = UserStatus.BASE_VIP
-    if int(callback_query.data.split("_")[-1]) == 2:
+    elif callback_data == 2:
         vip_status = UserStatus.MIDDLE_VIP
-    if int(callback_query.data.split("_")[-1]) == 3:
+    elif callback_data == 3:
         vip_status = UserStatus.SUPER_VIP
     else:
-        vip_status = UserStatus.NOT_VIP
+        vip_status = UserStatus.MIDDLE_VIP
 
     await state.update_data(vip_status=vip_status)
 
     await callback_query.message.answer("Отправь user_id пользователя")
+
 
 @router.message(F.text, StateFilter(AddVipUser.add_vip))
 async def add_vip(message: types.Message, state: FSMContext):
@@ -56,3 +60,4 @@ async def add_vip(message: types.Message, state: FSMContext):
 
     await message.answer("Вип выдан пользователю")
     await state.clear()
+

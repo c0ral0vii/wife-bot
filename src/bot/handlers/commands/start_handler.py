@@ -1,8 +1,10 @@
 from aiogram import Router, types, F
 from aiogram.filters import CommandStart, Command
 from aiogram.fsm.context import FSMContext
-from aiogram.utils.keyboard import InlineKeyboardBuilder  
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 
+from src.database.models import UserStatus
+from src.database.orm.vip_users import set_vip_status
 from src.logger import setup_logger
 from src.bot.keyboards.reply import start_kb
 from src.database.orm.users import check_vip, create_user
@@ -163,20 +165,23 @@ async def send_invoice_handler(callback: types.CallbackQuery):
 @router.message(F.successful_payment)
 async def on_successful_payment(message: types.Message):
     payment_amount = message.successful_payment.total_amount
-
+    user_id = message.successful_payment.user.id
     if payment_amount == 50:
-        await handle_50_stars(message)
+        await set_vip_status(user_id=user_id, vip_status=UserStatus.BASE_VIP)
+
     elif payment_amount == 100:
-        await handle_100_stars(message)
+        await set_vip_status(user_id=user_id, vip_status=UserStatus.MIDDLE_VIP)
+
     elif payment_amount == 150:
-        await handle_150_stars(message)
+        await set_vip_status(user_id=user_id, vip_status=UserStatus.SUPER_VIP)
+
     else:
-        await handle_other_amount(message)
+        await message.answer("Обратитесь к администратору, ваша транзакция не прошла")
+
 
 
 async def handle_50_stars(message: types.Message):
     logger.debug("Оплата на 50 звезд")
-    # Логика для обработки оплаты на 50 звезд
 
 async def handle_100_stars(message: types.Message):
     logger.debug("Оплата на 100 звезд")

@@ -16,7 +16,7 @@ async def set_vip_status(user_id: int, vip_status: UserStatus):
     async with async_session() as session:
         stmt = select(User).where(User.user_id == user_id)
         result = await session.execute(stmt)
-        user = result.scalars().first()
+        user = result.scalar_one_or_none()
 
         if not user:
             raise ValueError(f"Пользователь с ID {user_id} не найден.")
@@ -31,4 +31,5 @@ async def set_vip_status(user_id: int, vip_status: UserStatus):
             # Если статус "Обычный пользователь", сбрасываем срок действия
             user.vip_to = None
 
+        session.add(user)
         await session.commit()
