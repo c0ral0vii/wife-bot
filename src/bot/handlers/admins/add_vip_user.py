@@ -55,9 +55,10 @@ async def add_vip_1(callback_query: types.CallbackQuery, state: FSMContext):
 async def add_vip(message: types.Message, state: FSMContext):
     user_id = message.text
     data = await state.get_data()
+    try:
+        await set_vip_status(user_id=int(user_id), vip_status=data["vip_status"])
 
-    await set_vip_status(user_id=int(user_id), vip_status=data["vip_status"])
-
-    await message.answer("Вип выдан пользователю")
-    await state.clear()
-
+        await message.answer("Вип выдан пользователю")
+        await state.clear()
+    except ValueError:
+        await message.answer("Такой пользователь не найден")
