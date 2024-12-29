@@ -29,6 +29,7 @@ def contains_only_digits(text: str) -> bool:
     return text.isdigit()
 
 
+@router.message(Command("trade_shop"))
 @router.message(F.text.startswith("🔄 Обмен"))
 async def trade_shop(message: types.Message, state: FSMContext):
     await message.answer("🔄 *Рынок обменов*", reply_markup=InlineKeyboardMarkup(
