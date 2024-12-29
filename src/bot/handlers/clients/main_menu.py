@@ -27,3 +27,8 @@ async def main_menu(message: types.Message, state: FSMContext):
                                 [InlineKeyboardButton(text="👫 Мой гарем", callback_data="my_wifes"), InlineKeyboardButton(text="📞 Обратная связь", callback_data="feedback")],
                                 [InlineKeyboardButton(text="💎 Купить VIP", callback_data="buy_vip")],
                             ]))
+
+
+@router.callback_query(F.data == "feedback")
+async def feedback(callback: types.CallbackQuery, state: FSMContext):
+    await callback.message.answer("Для обратной связи отпишите нам - @Sm0keLuv")

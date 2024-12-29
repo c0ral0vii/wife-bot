@@ -63,14 +63,14 @@ class User(Base):
 
     username: Mapped[str] = mapped_column(String, default="Не задано")
     status: Mapped[UserStatus] = mapped_column(SQLEnum(UserStatus, name="user_status"),
-                                                default=UserStatus.NOT_VIP)
-    vip_to: Mapped[Date] = mapped_column(Date, nullable=True) 
+                                               default=UserStatus.NOT_VIP)
+    vip_to: Mapped[Date] = mapped_column(Date, nullable=True)
 
     balance: Mapped[Decimal] = mapped_column(Numeric(precision=25, scale=2), default=Decimal('0.00'))
     alter_balance: Mapped[Decimal] = mapped_column(Numeric(precision=25, scale=2), default=Decimal('0.00'))
 
     alter_shop_level: Mapped[int] = mapped_column(Integer, default=1)
-    
+
     profile_imgs: Mapped[str] = mapped_column(String, nullable=False)
 
     characters: Mapped[list["Wife"]] = relationship(
@@ -83,6 +83,9 @@ class User(Base):
     sent_trades: Mapped[list["Trade"]] = relationship("Trade", foreign_keys="Trade.from_id", back_populates="from_")
 
     received_trades: Mapped[list["Trade"]] = relationship("Trade", foreign_keys="Trade.to_id", back_populates="to_")
+
+    # Связь с TradeShop
+    trade_shops: Mapped[list["TradeShop"]] = relationship("TradeShop", back_populates="seller")
 
 
 class Wife(Base):
@@ -115,6 +118,9 @@ class Wife(Base):
         back_populates="change_to"
     )
 
+    # Связь с TradeShop
+    trade_shops: Mapped[list["TradeShop"]] = relationship("TradeShop", back_populates="wife")
+
 
 class Shop(Base):
     __tablename__ = "shop"
@@ -125,6 +131,21 @@ class Shop(Base):
     chat_id: Mapped[int] = mapped_column(BigInteger, nullable=True)
 
     slots: Mapped[list["Slot"]] = relationship("Slot", back_populates="shop")
+
+
+class TradeShop(Base):
+    __tablename__ = "trade_shops"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+
+    wife_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("wifes.id"), nullable=False)
+    from_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.user_id"), nullable=False)
+
+    seller: Mapped["User"] = relationship("User", back_populates="trade_shops")
+    wife: Mapped["Wife"] = relationship("Wife", back_populates="trade_shops")
+
+    # Связь с Trade
+    trades: Mapped[list["Trade"]] = relationship("Trade", back_populates="trade_shop")
 
 
 class Slot(Base):
@@ -157,6 +178,10 @@ class Trade(Base):
 
     change_from_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("wifes.id"), nullable=False)
     change_to_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("wifes.id"), nullable=True)
+
+    # Связь с TradeShop
+    trade_shop_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("trade_shops.id"), nullable=True)
+    trade_shop: Mapped["TradeShop"] = relationship("TradeShop", back_populates="trades")
 
     from_: Mapped["User"] = relationship("User", foreign_keys=[from_id], back_populates="sent_trades")
     to_: Mapped["User"] = relationship("User", foreign_keys=[to_id], back_populates="received_trades")

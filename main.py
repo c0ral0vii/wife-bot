@@ -2,7 +2,6 @@ import asyncio
 from aiogram import Bot, Dispatcher, types
 
 from src.logger import setup_logger
-from src.config.config import settings
 from src.bot.handlers.admins import (
     admin_start,
 
@@ -12,7 +11,6 @@ from src.bot.handlers.admins import (
     add_group,
     add_vip_user,
 )
-from src.parser.services import parse
 
 from src.bot.handlers.chats import (
     shop_handler,
@@ -35,12 +33,13 @@ from src.bot.handlers.commands import (
     start_handler,
 )
 from src.bot.middlewares import (
-    admin_middleware,
     antiflood,
     block_middleware
 )
+from parser import services
 
-bot = Bot(token="7820388733:AAHewa-joggGXbyqOutY0eaRrzquKoXXFz4")
+
+bot = Bot(token="7712843334:AAHaBJKNCYpiDZrGr9K9eeI8oaAkikXaONs")
 dp = Dispatcher()
 logger = setup_logger(__name__)
 
@@ -105,6 +104,7 @@ async def on_starup():
 
 
 async def main():
+    # await services.parse.parse_page()
     await bot.delete_webhook(drop_pending_updates=True)
     await on_starup()
     logger.info("Запуск")

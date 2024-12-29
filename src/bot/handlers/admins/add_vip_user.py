@@ -62,3 +62,4 @@ async def add_vip(message: types.Message, state: FSMContext):
         await state.clear()
     except ValueError:
         await message.answer("Такой пользователь не найден")
+        await state.clear()

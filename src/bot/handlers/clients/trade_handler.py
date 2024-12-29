@@ -31,7 +31,24 @@ def contains_only_digits(text: str) -> bool:
 
 @router.message(F.text.startswith("🔄 Обмен"))
 async def trade_shop(message: types.Message, state: FSMContext):
-    ...
+    await message.answer("🔄 *Рынок обменов*", reply_markup=InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="📋 Все обмены", callback_data="shop_trades")],
+            [InlineKeyboardButton(text="➕ Создать обмен", callback_data="create_trade")],
+            [InlineKeyboardButton(text="👤 Ваши обмены", callback_data="my_trades")],
+        ]
+    ),
+    parse_mode="Markdown")
+
+
+@router.callback_query(F.data.startswith("my_trades"))
+async def trade_shop(callback: types.CallbackQuery, state: FSMContext):
+    await callback.message.answer("🔄 *Ваши обменs*", reply_markup=InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="➕ Создать обмен", callback_data="create_trade")],
+        ]
+    ),
+    parse_mode="Markdown")
 
 
 @router.message(Command("trade"))
@@ -266,8 +283,14 @@ async def to_trade(callback: types.CallbackQuery, state: FSMContext, bot: Bot):
 @router.callback_query(F.data.startswith("final_accept_trade_"))
 async def final_accept_trade(callback: types.CallbackQuery, bot: Bot):
     callback_data = callback.data.split("_")[-1]
-    trade = await final_accept_trade_with_exchange(trade_id=int(callback_data))
     await callback.message.delete()
+    try:
+        trade = await final_accept_trade_with_exchange(trade_id=int(callback_data))
+        await bot.send_message(chat_id=trade.from_.user_id, text="❌Обмен отменен")
+        await bot.send_message(chat_id=trade.to_.user_id, text="❌Обмен отменен")
+    except ValueError:
+        await callback.message.answer("Эти вайфы у вас уже есть")
+        return
     await bot.send_message(chat_id=trade.to_.user_id, text="✅Трейд подтвержден")
     await bot.send_message(chat_id=trade.from_.user_id, text="✅Трейд подтвержден")
 

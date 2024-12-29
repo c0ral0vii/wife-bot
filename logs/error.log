@@ -101,3 +101,18 @@ DETAIL:  Key (user_id, wife_id)=(1, 30) already exists.
 [SQL: INSERT INTO user_wife_association (user_id, wife_id) VALUES ($1::BIGINT, $2::BIGINT)]
 [parameters: (1, 30)]
 (Background on this error at: https://sqlalche.me/e/20/gkpj)
+2024-12-29 00:35:01,664 - parser.services - ERROR - Ошибка сети: 404, message='Not Found', url='https://shikimori.one/characters/5'
+2024-12-29 00:35:08,546 - parser.services - ERROR - Ошибка сети: 404, message='Not Found', url='https://shikimori.one/characters/8'
+2024-12-29 00:35:13,832 - parser.services - ERROR - Ошибка сети: 404, message='Not Found', url='https://shikimori.one/characters/9'
+2024-12-29 00:35:19,072 - parser.services - ERROR - Ошибка сети: 404, message='Not Found', url='https://shikimori.one/characters/10'
+2024-12-29 00:35:30,377 - parser.services - ERROR - Ошибка сети: 404, message='Not Found', url='https://shikimori.one/characters/17'
+2024-12-29 00:35:52,110 - parser.services - ERROR - Ошибка сети: 404, message='Not Found', url='https://shikimori.one/characters/37'
+2024-12-29 00:36:29,977 - parser.services - ERROR - Ошибка сети: 429, message='Too Many Requests', url='https://shikimori.one/characters/87'
+2024-12-29 00:36:35,125 - parser.services - ERROR - Ошибка сети: 429, message='Too Many Requests', url='https://shikimori.one/characters/88'
+2024-12-29 00:36:40,276 - parser.services - ERROR - Ошибка сети: 429, message='Too Many Requests', url='https://shikimori.one/characters/89'
+2024-12-29 00:36:45,419 - parser.services - ERROR - Ошибка сети: 429, message='Too Many Requests', url='https://shikimori.one/characters/90'
+2024-12-29 00:36:50,558 - parser.services - ERROR - Ошибка сети: 429, message='Too Many Requests', url='https://shikimori.one/characters/91'
+2024-12-29 00:36:55,707 - parser.services - ERROR - Ошибка сети: 429, message='Too Many Requests', url='https://shikimori.one/characters/92'
+2024-12-29 00:37:33,935 - parser.services - ERROR - Ошибка сети: 429, message='Too Many Requests', url='https://shikimori.one/characters/137'
+2024-12-29 00:37:39,362 - parser.services - ERROR - Ошибка сети: 429, message='Too Many Requests', url='https://shikimori.one/characters/138'
+2024-12-29 00:37:44,584 - parser.services - ERROR - Ошибка сети: 429, message='Too Many Requests', url='https://shikimori.one/characters/139'
